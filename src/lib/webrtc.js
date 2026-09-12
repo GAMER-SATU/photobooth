@@ -5,7 +5,16 @@
 export function getIceServers() {
   const stunUrl = process.env.NEXT_PUBLIC_STUN_SERVER || 'stun:stun.l.google.com:19302';
   const iceServers = [
-    { urls: [stunUrl, 'stun:stun1.l.google.com:19302'] }
+    {
+      urls: [
+        stunUrl,
+        'stun:stun1.l.google.com:19302',
+        'stun:stun2.l.google.com:19302',
+        'stun:stun3.l.google.com:19302',
+        'stun:stun4.l.google.com:19302',
+        'stun:stun.services.mozilla.com'
+      ]
+    }
   ];
 
   const turnUrl = process.env.NEXT_PUBLIC_TURN_SERVER;

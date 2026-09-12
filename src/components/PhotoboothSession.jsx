@@ -60,7 +60,7 @@ export default function PhotoboothSession({ roomId, startInBooth = false }) {
   const [soundOn, setSoundOn] = useState(true);
   const [micOn, setMicOn] = useState(true);
   const [curFilter, setCurFilter] = useState(FILTERS[0]);
-  const [studio, setStudioState] = useState(true);
+  const [studio, setStudioState] = useState(false);
   const [pelmetGone, setPelmetGone] = useState(false);
   const [flashActive, setFlashActive] = useState(false);
 

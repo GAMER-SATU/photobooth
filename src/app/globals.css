@@ -819,7 +819,7 @@ body.loaded .curtain-r .curtain-sway { animation: swayR 13s ease-in-out 2s infin
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  padding: calc(var(--pelmet) + 10px) clamp(20px, 5vw, 96px) 18px;
+  padding: calc(var(--pelmet) + 40px) clamp(20px, 5vw, 96px) 18px;
   position: relative;
 }
 
@@ -1188,6 +1188,18 @@ body.loaded .curtain-r .curtain-sway { animation: swayR 13s ease-in-out 2s infin
 .booth-machine.studio .screen-fx {
   box-shadow: inset 0 0 14px rgba(38,36,32,.12);
   background: linear-gradient(115deg, rgba(255,255,255,.15), transparent 30%);
+}
+
+.screen-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image: var(--noise);
+  background-size: 140px 140px;
+  mix-blend-mode: overlay;
+  opacity: 0;
+  transition: opacity .3s ease;
 }
 
 .screen-live {

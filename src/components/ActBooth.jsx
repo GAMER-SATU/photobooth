@@ -77,6 +77,11 @@ export default function ActBooth({
     }
   }, [photos.length]);
 
+  const filterCss = curFilter && curFilter.css && curFilter.css !== 'none' ? curFilter.css : 'none';
+  const screenVigStyle = curFilter?.vig
+    ? `inset 0 0 ${Math.round(curFilter.vig * 55)}px rgba(4,4,6,${(curFilter.vig * 0.75).toFixed(2)})`
+    : undefined;
+
   return (
     <section className={`scene scene-booth ${active ? 'on' : ''}`} id="sceneBooth">
       <div className={`booth-frame ${showDressBar ? 'dresspad' : ''}`} ref={boothRef} id="boothFrame">
@@ -141,9 +146,46 @@ export default function ActBooth({
                 <figure className={`viewport ${isSolo ? 'solo' : ''} ${youMode === 'live' ? 'live' : ''}`} id="vpYou">
                   <figcaption className="vp-top">{isSolo ? 'YOUR CAMERA' : 'ON YOUR SIDE'}</figcaption>
                   <div className="screen">
-                    <video ref={camYouRef} id="camYou" autoPlay playsInline muted style={{ display: youMode === 'live' ? 'block' : 'none' }} />
-                    <canvas ref={fbYouRef} id="fbYou" className="fb" width={480} height={540} style={{ display: youMode === 'live' ? 'block' : 'none' }} />
-                    <div className="screen-fx" />
+                    <video
+                      ref={camYouRef}
+                      id="camYou"
+                      autoPlay
+                      playsInline
+                      muted
+                      style={{
+                        display: youMode === 'live' ? 'block' : 'none',
+                        filter: filterCss,
+                        transition: 'filter 0.3s ease'
+                      }}
+                    />
+                    <canvas
+                      ref={fbYouRef}
+                      id="fbYou"
+                      className="fb"
+                      width={480}
+                      height={540}
+                      style={{
+                        display: youMode === 'live' ? 'block' : 'none',
+                        filter: filterCss,
+                        transition: 'filter 0.3s ease'
+                      }}
+                    />
+                    <div
+                      className="screen-fx"
+                      style={{
+                        boxShadow: screenVigStyle,
+                        transition: 'box-shadow 0.3s ease'
+                      }}
+                    />
+                    {curFilter?.grain > 0 && (
+                      <div
+                        className="screen-grain"
+                        style={{
+                          opacity: Math.min(0.42, curFilter.grain * 1.8),
+                          transition: 'opacity 0.3s ease'
+                        }}
+                      />
+                    )}
                     <div className="screen-live"><i />LIVE</div>
                     <span className="studio-chip">STUDIO</span>
                     <div className="studio-flash" ref={sfYouRef} id="sfYou" />
@@ -173,9 +215,45 @@ export default function ActBooth({
                     <figure className={`viewport ${remoteStream ? 'live' : ''}`} id="vpThem">
                       <figcaption className="vp-top">ON THEIR SIDE</figcaption>
                       <div className="screen">
-                        <video ref={camThemRef} id="camThem" autoPlay playsInline style={{ display: remoteStream ? 'block' : 'none' }} />
-                        <canvas ref={themCvRef} id="themCv" className="fb" width={480} height={540} style={{ display: remoteStream ? 'block' : 'none' }} />
-                        <div className="screen-fx" />
+                        <video
+                          ref={camThemRef}
+                          id="camThem"
+                          autoPlay
+                          playsInline
+                          style={{
+                            display: remoteStream ? 'block' : 'none',
+                            filter: filterCss,
+                            transition: 'filter 0.3s ease'
+                          }}
+                        />
+                        <canvas
+                          ref={themCvRef}
+                          id="themCv"
+                          className="fb"
+                          width={480}
+                          height={540}
+                          style={{
+                            display: remoteStream ? 'block' : 'none',
+                            filter: filterCss,
+                            transition: 'filter 0.3s ease'
+                          }}
+                        />
+                        <div
+                          className="screen-fx"
+                          style={{
+                            boxShadow: screenVigStyle,
+                            transition: 'box-shadow 0.3s ease'
+                          }}
+                        />
+                        {curFilter?.grain > 0 && (
+                          <div
+                            className="screen-grain"
+                            style={{
+                              opacity: Math.min(0.42, curFilter.grain * 1.8),
+                              transition: 'opacity 0.3s ease'
+                            }}
+                          />
+                        )}
                         <div className="screen-live"><i />LIVE</div>
                         <span className="studio-chip">STUDIO</span>
                         <div className="studio-flash" ref={sfThemRef} id="sfThem" />

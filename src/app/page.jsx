@@ -209,7 +209,7 @@ export default function LandingPage() {
           photos={[]}
           roomCode={loadedStrip.roomCode}
           filterName={loadedStrip.filterName || 'ORIGINAL'}
-          isStudio={true}
+          isStudio={false}
           stickersDict={STICKERS}
           loadedStrip={loadedStrip}
           uploading={false}

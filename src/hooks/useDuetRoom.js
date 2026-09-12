@@ -58,16 +58,41 @@ export function useDuetRoom({
   const pcRef = useRef(null);
   const channelRef = useRef(null);
   const isInitiatorRef = useRef(false);
+  const isInitiatingRef = useRef(false);
   const pendingIceCandidatesRef = useRef([]);
   const hasNegotiatedRef = useRef(false);
   const partnerLeftTimerRef = useRef(null);
 
-  // Keep latest callbacks in refs to avoid stale closures in listeners
+  // Stable state and callback refs to prevent channel tearing down on every render
+  const partnerIdRef = useRef(null);
+  partnerIdRef.current = partnerId;
+
+  const isHostRef = useRef(false);
+  isHostRef.current = isHost;
+
   const onCaptureFrameRef = useRef(onCaptureFrame);
   onCaptureFrameRef.current = onCaptureFrame;
 
   const triggerToastRef = useRef(triggerToast);
   triggerToastRef.current = triggerToast;
+
+  const setPhotosRef = useRef(setPhotos);
+  setPhotosRef.current = setPhotos;
+
+  const setFilmRef = useRef(setFilm);
+  setFilmRef.current = setFilm;
+
+  const setCurFilterRef = useRef(setCurFilter);
+  setCurFilterRef.current = setCurFilter;
+
+  const setStudioStateRef = useRef(setStudioState);
+  setStudioStateRef.current = setStudioState;
+
+  const initiateCallAsHostRef = useRef(null);
+  const handleRemoteOfferAsGuestRef = useRef(null);
+  const handleRemoteAnswerOnHostRef = useRef(null);
+  const handleRemoteIceCandidateRef = useRef(null);
+  const runSynchronizedCountdownRef = useRef(null);
 
   // Structured logging helpers
   const logRoom = useCallback((...args) => console.log(`[DUET][ROOM][${normalizedRoomId}]`, ...args), [normalizedRoomId]);
@@ -106,7 +131,7 @@ export function useDuetRoom({
     if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setYouMode('lost');
       setRoomState(ROOM_STATES.ERROR);
-      if (userInitiated) triggerToastRef.current('Camera API not available in this browser');
+      if (userInitiated) triggerToastRef.current?.('Camera API not available in this browser');
       return null;
     }
 
@@ -120,15 +145,14 @@ export function useDuetRoom({
       localStreamRef.current = stream;
       setYouMode('live');
 
-      // If we are currently in CAMERA_PERMISSION or WAITING_FOR_PARTNER, update state
       setRoomState(prev => {
         if (prev === ROOM_STATES.CAMERA_PERMISSION) {
-          return partnerId ? ROOM_STATES.PARTNER_CONNECTED : ROOM_STATES.WAITING_FOR_PARTNER;
+          return partnerIdRef.current ? ROOM_STATES.PARTNER_CONNECTED : ROOM_STATES.WAITING_FOR_PARTNER;
         }
         return prev;
       });
 
-      if (userInitiated) triggerToastRef.current('Camera on — welcome in ✶');
+      if (userInitiated) triggerToastRef.current?.('Camera on — welcome in ✶');
 
       // Add or replace tracks in existing RTCPeerConnection if available
       if (pcRef.current) {
@@ -150,10 +174,10 @@ export function useDuetRoom({
       console.warn('[DUET][MEDIA] Camera acquisition error:', err);
       setYouMode('lost');
       setRoomState(ROOM_STATES.CAMERA_PERMISSION);
-      if (userInitiated) triggerToastRef.current('Camera permission denied — check your browser settings');
+      if (userInitiated) triggerToastRef.current?.('Camera permission denied — check your browser settings');
       return null;
     }
-  }, [logMedia, logWebRTC, partnerId]);
+  }, [logMedia, logWebRTC]);
 
   // Synchronized countdown runner
   const runSynchronizedCountdown = useCallback(async (photoIdx, targetTime) => {
@@ -202,8 +226,8 @@ export function useDuetRoom({
     if (onCaptureFrameRef.current) {
       const ph = onCaptureFrameRef.current();
       if (ph) {
-        setPhotos(prev => [...prev, ph]);
-        setFilm(prev => {
+        setPhotosRef.current?.(prev => [...prev, ph]);
+        setFilmRef.current?.(prev => {
           const next = prev - 1;
           if (next <= 0) {
             setRoomState(ROOM_STATES.PHOTO_REVIEW);
@@ -217,9 +241,9 @@ export function useDuetRoom({
 
     setIsCapturing(false);
 
-    if (photoIdx === 0) triggerToastRef.current('tap your print anytime to write on it ✶');
-    if (photoIdx === 2) triggerToastRef.current('three shots taken — tap any print to make it yours');
-  }, [logRoom, setPhotos, setFilm]);
+    if (photoIdx === 0) triggerToastRef.current?.('tap your print anytime to write on it ✶');
+    if (photoIdx === 2) triggerToastRef.current?.('three shots taken — tap any print to make it yours');
+  }, [logRoom]);
 
   // Cleanup RTCPeerConnection safely
   const closePeerConnection = useCallback(() => {
@@ -237,6 +261,7 @@ export function useDuetRoom({
       pcRef.current = null;
     }
     hasNegotiatedRef.current = false;
+    isInitiatingRef.current = false;
     pendingIceCandidatesRef.current = [];
     setRemoteStream(null);
   }, [logWebRTC]);
@@ -258,56 +283,73 @@ export function useDuetRoom({
 
   // Initialize WebRTC as Host (Offerer)
   const initiateCallAsHost = useCallback(async (targetPartnerId) => {
+    if (!targetPartnerId) return;
+    if (isInitiatingRef.current) {
+      logWebRTC('Call initiation already in progress, skipping duplicate');
+      return;
+    }
+    if (pcRef.current && (pcRef.current.connectionState === 'connected' || pcRef.current.connectionState === 'connecting')) {
+      logWebRTC('Peer connection already connected/connecting, skipping offer');
+      return;
+    }
+
+    isInitiatingRef.current = true;
     logWebRTC('Initiating WebRTC offer as HOST to guest:', targetPartnerId);
     closePeerConnection();
 
-    // Ensure camera is active
-    let stream = localStreamRef.current;
-    if (!stream || !stream.active) {
-      stream = await startCamera(false);
-    }
-
-    const pc = createPeerConnection({
-      onIceCandidate: (candidate) => {
-        broadcastMessage('signal_ice', {
-          to: targetPartnerId,
-          candidate: candidate.toJSON ? candidate.toJSON() : candidate
-        });
-      },
-      onTrack: (evt) => {
-        logMedia('Remote track received by host:', evt.streams[0]?.id);
-        if (evt.streams && evt.streams[0]) {
-          setRemoteStream(evt.streams[0]);
-          setRoomState(ROOM_STATES.READY);
-        }
-      },
-      onConnectionStateChange: (state) => {
-        logWebRTC('Host connection state:', state);
-        if (state === 'connected') {
-          setRoomState(ROOM_STATES.READY);
-        } else if (state === 'disconnected' || state === 'failed') {
-          setRoomState(ROOM_STATES.RECONNECTING);
-        }
-      },
-      onIceConnectionStateChange: (state) => {
-        logWebRTC('Host ICE state:', state);
-        if (state === 'failed') {
-          logWebRTC('Attempting ICE restart...');
-          // Trigger renegotiation if needed
-        }
-      }
-    });
-
-    pcRef.current = pc;
-
-    if (stream) {
-      stream.getTracks().forEach(track => {
-        logWebRTC('Host adding local track to PC:', track.kind);
-        pc.addTrack(track, stream);
-      });
-    }
-
     try {
+      let stream = localStreamRef.current;
+      if (!stream || !stream.active) {
+        stream = await startCamera(false);
+      }
+
+      const pc = createPeerConnection({
+        onIceCandidate: (candidate) => {
+          broadcastMessage('signal_ice', {
+            to: targetPartnerId,
+            candidate: candidate.toJSON ? candidate.toJSON() : candidate
+          });
+        },
+        onTrack: (evt) => {
+          logMedia('Remote track received by host:', evt.track.kind);
+          if (evt.streams && evt.streams[0]) {
+            setRemoteStream(evt.streams[0]);
+          } else {
+            setRemoteStream(prev => {
+              const s = prev || new MediaStream();
+              s.addTrack(evt.track);
+              return s;
+            });
+          }
+          setRoomState(ROOM_STATES.READY);
+        },
+        onConnectionStateChange: (state) => {
+          logWebRTC('Host connection state:', state);
+          if (state === 'connected') {
+            setRoomState(ROOM_STATES.READY);
+          } else if (state === 'failed') {
+            logWebRTC('Host connection failed, retrying in 2s...');
+            setTimeout(() => {
+              if (partnerIdRef.current && isHostRef.current) {
+                initiateCallAsHostRef.current?.(partnerIdRef.current);
+              }
+            }, 2000);
+          }
+        },
+        onIceConnectionStateChange: (state) => {
+          logWebRTC('Host ICE state:', state);
+        }
+      });
+
+      pcRef.current = pc;
+
+      if (stream) {
+        stream.getTracks().forEach(track => {
+          logWebRTC('Host adding local track to PC:', track.kind);
+          pc.addTrack(track, stream);
+        });
+      }
+
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       logSignal('Host created offer, broadcasting to guest:', targetPartnerId);
@@ -319,6 +361,8 @@ export function useDuetRoom({
       });
     } catch (e) {
       console.warn('[DUET][WEBRTC] Host createOffer error:', e);
+    } finally {
+      isInitiatingRef.current = false;
     }
   }, [broadcastMessage, closePeerConnection, logMedia, logSignal, logWebRTC, startCamera]);
 
@@ -327,45 +371,52 @@ export function useDuetRoom({
     logWebRTC('Guest handling remote offer from host:', senderId);
     closePeerConnection();
 
-    let stream = localStreamRef.current;
-    if (!stream || !stream.active) {
-      stream = await startCamera(false);
-    }
-
-    const pc = createPeerConnection({
-      onIceCandidate: (candidate) => {
-        broadcastMessage('signal_ice', {
-          to: senderId,
-          candidate: candidate.toJSON ? candidate.toJSON() : candidate
-        });
-      },
-      onTrack: (evt) => {
-        logMedia('Remote track received by guest:', evt.streams[0]?.id);
-        if (evt.streams && evt.streams[0]) {
-          setRemoteStream(evt.streams[0]);
-          setRoomState(ROOM_STATES.READY);
-        }
-      },
-      onConnectionStateChange: (state) => {
-        logWebRTC('Guest connection state:', state);
-        if (state === 'connected') {
-          setRoomState(ROOM_STATES.READY);
-        } else if (state === 'disconnected' || state === 'failed') {
-          setRoomState(ROOM_STATES.RECONNECTING);
-        }
-      }
-    });
-
-    pcRef.current = pc;
-
-    if (stream) {
-      stream.getTracks().forEach(track => {
-        logWebRTC('Guest adding local track to PC:', track.kind);
-        pc.addTrack(track, stream);
-      });
-    }
-
     try {
+      let stream = localStreamRef.current;
+      if (!stream || !stream.active) {
+        stream = await startCamera(false);
+      }
+
+      const pc = createPeerConnection({
+        onIceCandidate: (candidate) => {
+          broadcastMessage('signal_ice', {
+            to: senderId,
+            candidate: candidate.toJSON ? candidate.toJSON() : candidate
+          });
+        },
+        onTrack: (evt) => {
+          logMedia('Remote track received by guest:', evt.track.kind);
+          if (evt.streams && evt.streams[0]) {
+            setRemoteStream(evt.streams[0]);
+          } else {
+            setRemoteStream(prev => {
+              const s = prev || new MediaStream();
+              s.addTrack(evt.track);
+              return s;
+            });
+          }
+          setRoomState(ROOM_STATES.READY);
+        },
+        onConnectionStateChange: (state) => {
+          logWebRTC('Guest connection state:', state);
+          if (state === 'connected') {
+            setRoomState(ROOM_STATES.READY);
+          }
+        },
+        onIceConnectionStateChange: (state) => {
+          logWebRTC('Guest ICE state:', state);
+        }
+      });
+
+      pcRef.current = pc;
+
+      if (stream) {
+        stream.getTracks().forEach(track => {
+          logWebRTC('Guest adding local track to PC:', track.kind);
+          pc.addTrack(track, stream);
+        });
+      }
+
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
       logWebRTC('Guest setRemoteDescription(offer) succeeded');
       await drainIceCandidates();
@@ -398,7 +449,7 @@ export function useDuetRoom({
         logWebRTC('Host setRemoteDescription(answer) succeeded');
         await drainIceCandidates();
       } else {
-        console.warn('[DUET][WEBRTC] Ignored duplicate or unexpected answer in signalingState:', pcRef.current.signalingState);
+        console.warn('[DUET][WEBRTC] Ignored unexpected answer in signalingState:', pcRef.current.signalingState);
       }
     } catch (e) {
       console.warn('[DUET][WEBRTC] Host setRemoteDescription error:', e);
@@ -421,6 +472,13 @@ export function useDuetRoom({
       pendingIceCandidatesRef.current.push(candidate);
     }
   }, [logSignal]);
+
+  // Keep latest function references in refs
+  initiateCallAsHostRef.current = initiateCallAsHost;
+  handleRemoteOfferAsGuestRef.current = handleRemoteOfferAsGuest;
+  handleRemoteAnswerOnHostRef.current = handleRemoteAnswerOnHost;
+  handleRemoteIceCandidateRef.current = handleRemoteIceCandidate;
+  runSynchronizedCountdownRef.current = runSynchronizedCountdown;
 
   // Main lifecycle effect for Supabase Realtime channel & Presence
   useEffect(() => {
@@ -446,30 +504,26 @@ export function useDuetRoom({
 
     channelRef.current = channel;
 
-    // 1. PRESENCE HANDLERS (Register before subscribe)
+    // 1. PRESENCE HANDLERS
     channel.on('presence', { event: 'sync' }, () => {
       if (!isMounted) return;
       const state = channel.presenceState();
       logPresence('Presence sync state:', state);
 
-      // Collect active participants
+      // Collect unique active participants
       const participants = [];
       Object.keys(state).forEach(key => {
         const presences = state[key];
         if (Array.isArray(presences) && presences.length > 0) {
           participants.push({
             participantId: key,
-            joinedAt: presences[0].joinedAt || 0,
             ...presences[0]
           });
         }
       });
 
-      // Deterministic ordering by joinedAt timestamp, tie-breaker by participantId
-      participants.sort((a, b) => {
-        if (a.joinedAt !== b.joinedAt) return a.joinedAt - b.joinedAt;
-        return a.participantId.localeCompare(b.participantId);
-      });
+      // Immutable deterministic alphabetical ordering by participantId
+      participants.sort((a, b) => a.participantId.localeCompare(b.participantId));
 
       logPresence('Sorted participants in room:', participants.map(p => p.participantId));
       const totalCount = participants.length;
@@ -487,23 +541,26 @@ export function useDuetRoom({
       if (totalCount === 1) {
         // Single participant in room
         setIsHost(true);
-        isInitiatorRef.current = true;
+        isHostRef.current = true;
         setPartnerId(null);
+        partnerIdRef.current = null;
+        hasNegotiatedRef.current = false;
         setRoomState(prev => {
-          if (prev === ROOM_STATES.ROOM_FULL) return prev;
-          if (prev === ROOM_STATES.CAMERA_PERMISSION) return prev;
+          if (prev === ROOM_STATES.ROOM_FULL || prev === ROOM_STATES.CAMERA_PERMISSION) return prev;
           return ROOM_STATES.WAITING_FOR_PARTNER;
         });
       } else if (totalCount >= 2) {
-        // Two participants in room!
+        // Exactly two participants paired!
         const hostParticipant = participants[0];
         const guestParticipant = participants[1];
         const amIHost = hostParticipant.participantId === participantId;
         const otherParticipant = amIHost ? guestParticipant : hostParticipant;
+        const targetPartnerId = otherParticipant.participantId;
 
         setIsHost(amIHost);
-        isInitiatorRef.current = amIHost;
-        setPartnerId(otherParticipant.participantId);
+        isHostRef.current = amIHost;
+        setPartnerId(targetPartnerId);
+        partnerIdRef.current = targetPartnerId;
 
         logPresence(`Room paired: Host=${hostParticipant.participantId}, Guest=${guestParticipant.participantId}, AmIHost=${amIHost}`);
 
@@ -520,10 +577,17 @@ export function useDuetRoom({
           return ROOM_STATES.PARTNER_CONNECTED;
         });
 
-        // If host and WebRTC not yet negotiated, initiate offer
-        if (amIHost && !hasNegotiatedRef.current) {
-          logWebRTC('Host triggering call initiation...');
-          initiateCallAsHost(otherParticipant.participantId);
+        // If Host: initiate offer if not already connected
+        if (amIHost) {
+          const pc = pcRef.current;
+          const isAlive = pc && (pc.connectionState === 'connected' || pc.connectionState === 'connecting');
+          if (!isAlive && !isInitiatingRef.current) {
+            logWebRTC('Host initiating offer to guest:', targetPartnerId);
+            initiateCallAsHostRef.current?.(targetPartnerId);
+          }
+        } else {
+          // If Guest: announce readiness to host so host can send offer
+          broadcastMessage('guest_ready', { to: targetPartnerId });
         }
       }
     });
@@ -533,7 +597,7 @@ export function useDuetRoom({
       logPresence('Participant joined:', key, newPresences);
       if (key !== participantId) {
         Snd.arrive();
-        triggerToastRef.current('they entered the booth — smile! ✶');
+        triggerToastRef.current?.('they entered the booth — smile! ✶');
       }
     });
 
@@ -544,7 +608,7 @@ export function useDuetRoom({
         setRoomState(ROOM_STATES.DISCONNECTED);
         setRemoteStream(null);
         closePeerConnection();
-        triggerToastRef.current('the other one stepped out — room link active');
+        triggerToastRef.current?.('the other one stepped out — room link active');
 
         partnerLeftTimerRef.current = setTimeout(() => {
           if (isMounted) {
@@ -555,11 +619,23 @@ export function useDuetRoom({
     });
 
     // 2. BROADCAST SIGNALING & EVENTS
+    channel.on('broadcast', { event: 'guest_ready' }, ({ payload }) => {
+      if (!isMounted) return;
+      if (payload.to === participantId && isHostRef.current) {
+        logSignal('Received guest_ready on host, initiating offer');
+        const pc = pcRef.current;
+        const isAlive = pc && (pc.connectionState === 'connected' || pc.connectionState === 'connecting');
+        if (!isAlive && !isInitiatingRef.current) {
+          initiateCallAsHostRef.current?.(payload.from);
+        }
+      }
+    });
+
     channel.on('broadcast', { event: 'signal_offer' }, ({ payload }) => {
       if (!isMounted) return;
       logSignal('Received signal_offer from:', payload.from, 'to:', payload.to);
       if (payload.to === participantId) {
-        handleRemoteOfferAsGuest(payload.sdp, payload.from);
+        handleRemoteOfferAsGuestRef.current?.(payload.sdp, payload.from);
       }
     });
 
@@ -567,14 +643,14 @@ export function useDuetRoom({
       if (!isMounted) return;
       logSignal('Received signal_answer from:', payload.from, 'to:', payload.to);
       if (payload.to === participantId) {
-        handleRemoteAnswerOnHost(payload.sdp, payload.from);
+        handleRemoteAnswerOnHostRef.current?.(payload.sdp, payload.from);
       }
     });
 
     channel.on('broadcast', { event: 'signal_ice' }, ({ payload }) => {
       if (!isMounted) return;
       if (payload.to === participantId) {
-        handleRemoteIceCandidate(payload.candidate, payload.from);
+        handleRemoteIceCandidateRef.current?.(payload.candidate, payload.from);
       }
     });
 
@@ -585,17 +661,17 @@ export function useDuetRoom({
 
       switch (payload.type) {
         case 'SHUTTER_TRIGGER':
-          runSynchronizedCountdown(payload.photoIndex, payload.targetTime);
+          runSynchronizedCountdownRef.current?.(payload.photoIndex, payload.targetTime);
           break;
         case 'CAPTION_UPDATE':
-          setPhotos(prev => {
+          setPhotosRef.current?.(prev => {
             const next = [...prev];
             if (next[payload.index]) next[payload.index].caption = payload.text;
             return next;
           });
           break;
         case 'STICKER_ADD':
-          setPhotos(prev => {
+          setPhotosRef.current?.(prev => {
             const next = [...prev];
             if (next[payload.index]) {
               next[payload.index].stickers = [...(next[payload.index].stickers || []), payload.sticker];
@@ -604,7 +680,7 @@ export function useDuetRoom({
           });
           break;
         case 'STICKER_REMOVE':
-          setPhotos(prev => {
+          setPhotosRef.current?.(prev => {
             const next = [...prev];
             if (next[payload.index]) {
               next[payload.index].stickers = next[payload.index].stickers.filter(s => s.id !== payload.id);
@@ -613,17 +689,17 @@ export function useDuetRoom({
           });
           break;
         case 'TONE_CHANGE':
-          if (payload.filter) setCurFilter(payload.filter);
+          if (payload.filter) setCurFilterRef.current?.(payload.filter);
           break;
         case 'STUDIO_TOGGLE':
-          setStudioState(payload.studio);
+          setStudioStateRef.current?.(payload.studio);
           break;
         case 'PRINT_STRIP':
           setRoomState(ROOM_STATES.PRINTING);
           break;
         case 'RESET_BOOTH':
-          setPhotos([]);
-          setFilm(3);
+          setPhotosRef.current?.([]);
+          setFilmRef.current?.(3);
           setRoomState(ROOM_STATES.READY);
           break;
       }
@@ -644,35 +720,26 @@ export function useDuetRoom({
     // Cleanup on unmount
     return () => {
       isMounted = false;
-      logRoom('Unmounting room, cleaning up channel, media, and peer connection');
+      logRoom('Unmounting room, cleaning up channel');
       if (partnerLeftTimerRef.current) clearTimeout(partnerLeftTimerRef.current);
       closePeerConnection();
+      try {
+        channel.untrack();
+        supabase.removeChannel(channel);
+      } catch (e) {}
+      channelRef.current = null;
+    };
+  }, [normalizedRoomId, participantId]); // STABLE: Runs once per room ID and participant ID
+
+  // Separate unmount cleanup for camera stream
+  useEffect(() => {
+    return () => {
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(t => t.stop());
         localStreamRef.current = null;
       }
-      channel.untrack();
-      supabase.removeChannel(channel);
-      channelRef.current = null;
     };
-  }, [
-    normalizedRoomId,
-    participantId,
-    logRoom,
-    logPresence,
-    logSignal,
-    logWebRTC,
-    closePeerConnection,
-    initiateCallAsHost,
-    handleRemoteOfferAsGuest,
-    handleRemoteAnswerOnHost,
-    handleRemoteIceCandidate,
-    runSynchronizedCountdown,
-    setCurFilter,
-    setStudioState,
-    setPhotos,
-    setFilm
-  ]);
+  }, []);
 
   // Synchronized Shutter Trigger Handler
   const triggerSynchronizedShutter = useCallback((photoIdx) => {
