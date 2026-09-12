@@ -73,7 +73,7 @@ final class PhotoboothViewModel: ObservableObject {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         
         // Animate tear and open curtains into Act II
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
             SoundEngine.shared.play(.whoosh)
         }
         
@@ -100,18 +100,15 @@ final class PhotoboothViewModel: ObservableObject {
         SoundEngine.shared.play(.beep)
         
         countdownTimer?.invalidate()
-        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
-            guard let self = self else {
-                timer.invalidate()
-                return
-            }
-            
+        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
+                guard let self = self else { return }
                 if let count = self.countdownNumber, count > 1 {
                     self.countdownNumber = count - 1
                     SoundEngine.shared.play(.beep)
                 } else {
-                    timer.invalidate()
+                    self.countdownTimer?.invalidate()
+                    self.countdownTimer = nil
                     self.countdownNumber = nil
                     self.executeShutterFlash()
                 }
@@ -239,13 +236,9 @@ final class PhotoboothViewModel: ObservableObject {
         var currentStep: Double = 0
         
         printerTimer?.invalidate()
-        printerTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] timer in
-            guard let self = self else {
-                timer.invalidate()
-                return
-            }
-            
+        printerTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             Task { @MainActor in
+                guard let self = self else { return }
                 currentStep += 1
                 let progress = min(currentStep / totalSteps, 1.0)
                 self.printProgress = progress
@@ -264,7 +257,8 @@ final class PhotoboothViewModel: ObservableObject {
                 
                 // Complete emergence
                 if progress >= 1.0 {
-                    timer.invalidate()
+                    self.printerTimer?.invalidate()
+                    self.printerTimer = nil
                     self.isPrinterVibrating = false
                     self.isMotorActive = false
                     self.slotJitter = 0.0

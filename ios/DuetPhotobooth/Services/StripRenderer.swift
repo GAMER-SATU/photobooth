@@ -149,8 +149,6 @@ public final class StripRenderer {
     
     // Procedural sticker icon drawing for high-res rasterization
     private func drawSticker(type: StickerType, in ctx: CGContext, size: CGFloat) {
-        let rect = CGRect(x: -size / 2, y: -size / 2, width: size, height: size)
-        
         switch type {
         case .heart:
             let path = UIBezierPath()

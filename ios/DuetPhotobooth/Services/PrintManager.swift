@@ -33,7 +33,7 @@ final class PrintManager: NSObject, ObservableObject {
         printInfo.jobName = "Duet Photobooth Strip"
         printInfo.orientation = .portrait
         
-        let printController = UIPrintInteractionController.sharedPrintController
+        let printController = UIPrintInteractionController.shared
         printController.printInfo = printInfo
         printController.printingItem = image
         printController.showsNumberOfCopies = true
