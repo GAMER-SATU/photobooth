@@ -19,25 +19,16 @@ struct ContentView: View {
             switch viewModel.currentAct {
             case .curtains:
                 ActCurtainsView(viewModel: viewModel)
-                    .transition(.asymmetric(
-                        insertion: .opacity,
-                        removal: .scale(scale: 1.1).combined(with: .opacity)
-                    ))
+                    .transition(.opacity)
             case .booth:
                 ActBoothView(viewModel: viewModel)
-                    .transition(.asymmetric(
-                        insertion: .scale(scale: 0.95).combined(with: .opacity),
-                        removal: .opacity
-                    ))
+                    .transition(.opacity.combined(with: .scale))
             case .printer:
                 ActPrinterView(viewModel: viewModel)
                     .transition(.opacity)
             case .memory:
                 ActMemoryView(viewModel: viewModel)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .bottom).combined(with: .opacity),
-                        removal: .opacity
-                    ))
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .animation(.easeInOut(duration: 0.4), value: viewModel.currentAct)

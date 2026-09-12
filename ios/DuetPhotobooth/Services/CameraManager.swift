@@ -6,6 +6,7 @@
 import AVFoundation
 import UIKit
 import Combine
+import SwiftUI
 
 public final class CameraManager: NSObject, ObservableObject {
     @Published public var isCameraReady: Bool = false
@@ -92,6 +93,22 @@ public final class CameraManager: NSObject, ObservableObject {
         }
     }
     
+    public func startSession() {
+        sessionQueue.async { [weak self] in
+            guard let self = self, !self.captureSession.isRunning else { return }
+            self.captureSession.startRunning()
+            DispatchQueue.main.async { self.isCameraReady = true }
+        }
+    }
+    
+    public func stopSession() {
+        sessionQueue.async { [weak self] in
+            guard let self = self, self.captureSession.isRunning else { return }
+            self.captureSession.stopRunning()
+            DispatchQueue.main.async { self.isCameraReady = false }
+        }
+    }
+    
     public func capturePhoto(completion: @escaping (UIImage?) -> Void) {
         // If running on simulator or camera not active, generate a stylish demo photo
         #if targetEnvironment(simulator)
@@ -173,5 +190,40 @@ extension CameraManager: AVCaptureVideoDataOutputSampleBufferDelegate {
                 self.currentFrame = uiImage
             }
         }
+    }
+}
+
+// MARK: - Camera Preview View Component for SwiftUI
+public struct CameraPreviewView: UIViewRepresentable {
+    @ObservedObject public var cameraManager: CameraManager
+    
+    public init(cameraManager: CameraManager) {
+        self.cameraManager = cameraManager
+    }
+    
+    public func makeUIView(context: Context) -> CameraPreviewUIView {
+        let view = CameraPreviewUIView()
+        view.previewLayer.session = cameraManager.captureSession
+        view.previewLayer.videoGravity = .resizeAspectFill
+        if let connection = view.previewLayer.connection, connection.isVideoMirroringSupported {
+            connection.isVideoMirrored = true
+        }
+        return view
+    }
+    
+    public func updateUIView(_ uiView: CameraPreviewUIView, context: Context) {
+        if uiView.previewLayer.session !== cameraManager.captureSession {
+            uiView.previewLayer.session = cameraManager.captureSession
+        }
+    }
+}
+
+public class CameraPreviewUIView: UIView {
+    public override class var layerClass: AnyClass {
+        AVCaptureVideoPreviewLayer.self
+    }
+    
+    public var previewLayer: AVCaptureVideoPreviewLayer {
+        layer as! AVCaptureVideoPreviewLayer
     }
 }

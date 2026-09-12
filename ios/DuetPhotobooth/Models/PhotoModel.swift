@@ -12,15 +12,18 @@ public struct PhotoModel: Identifiable, Equatable {
     public var stickers: [StickerInstance]
     public let timestamp: Date
     public var filter: FilterType
+    public var frameIndex: Int
     public var rotation: Double
     
     public init(
         id: String = UUID().uuidString,
         image: UIImage,
+        filter: FilterType = .original,
+        filterApplied: FilterType? = nil,
+        frameIndex: Int = 0,
         caption: String = "",
         stickers: [StickerInstance] = [],
         timestamp: Date = Date(),
-        filter: FilterType = .original,
         rotation: Double = 0.0
     ) {
         self.id = id
@@ -28,7 +31,8 @@ public struct PhotoModel: Identifiable, Equatable {
         self.caption = caption
         self.stickers = stickers
         self.timestamp = timestamp
-        self.filter = filter
+        self.filter = filterApplied ?? filter
+        self.frameIndex = frameIndex
         self.rotation = rotation
     }
     
@@ -36,6 +40,7 @@ public struct PhotoModel: Identifiable, Equatable {
         lhs.id == rhs.id &&
         lhs.caption == rhs.caption &&
         lhs.stickers == rhs.stickers &&
-        lhs.filter == rhs.filter
+        lhs.filter == rhs.filter &&
+        lhs.frameIndex == rhs.frameIndex
     }
 }

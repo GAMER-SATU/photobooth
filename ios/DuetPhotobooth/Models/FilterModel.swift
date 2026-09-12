@@ -28,6 +28,8 @@ public enum FilterType: String, CaseIterable, Identifiable, Codable {
         }
     }
     
+    public var title: String { displayName }
+    
     public var swatchColor: Color {
         switch self {
         case .original: return .white
@@ -110,5 +112,11 @@ public enum FilterType: String, CaseIterable, Identifiable, Codable {
         }
         
         return image
+    }
+}
+
+public enum FilterModel {
+    public static func applyFilter(_ filter: FilterType, to image: UIImage) -> UIImage {
+        filter.apply(to: image)
     }
 }

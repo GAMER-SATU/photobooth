@@ -12,9 +12,18 @@ public final class StripRenderer {
     // Renders a high-resolution 300 DPI vintage photobooth strip
     public func renderStrip(
         photos: [PhotoModel],
-        filter: FilterType,
-        roomCode: String,
-        mode: SessionMode
+        mode: SessionMode = .solo,
+        roomCode: String = "",
+        filter: FilterType = .original
+    ) -> UIImage {
+        renderStrip(photos: photos, filter: filter, roomCode: roomCode, mode: mode)
+    }
+    
+    public func renderStrip(
+        photos: [PhotoModel],
+        filter: FilterType = .original,
+        roomCode: String = "",
+        mode: SessionMode = .solo
     ) -> UIImage {
         let scale: CGFloat = 2.0
         let stripWidth: CGFloat = 360 * scale // 720 px
