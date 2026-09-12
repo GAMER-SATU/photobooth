@@ -50,12 +50,14 @@ export function useDuetRoom({
   const [countdownNum, setCountdownNum] = useState(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
-  // Local media refs
+  // Local media refs and state
   const localStreamRef = useRef(null);
+  const [localStream, setLocalStream] = useState(null);
   const [youMode, setYouMode] = useState('init'); // 'init' | 'live' | 'lost'
 
   // WebRTC & Supabase Realtime refs
   const pcRef = useRef(null);
+  const remoteStreamRef = useRef(new MediaStream());
   const channelRef = useRef(null);
   const isInitiatorRef = useRef(false);
   const isInitiatingRef = useRef(false);
@@ -125,6 +127,7 @@ export function useDuetRoom({
     if (localStreamRef.current && localStreamRef.current.active) {
       logMedia('Local stream already active');
       setYouMode('live');
+      setLocalStream(localStreamRef.current);
       return localStreamRef.current;
     }
 
@@ -143,6 +146,7 @@ export function useDuetRoom({
 
       logMedia('Camera & mic permission granted, tracks:', stream.getTracks().map(t => t.kind));
       localStreamRef.current = stream;
+      setLocalStream(stream);
       setYouMode('live');
 
       setRoomState(prev => {
@@ -246,7 +250,7 @@ export function useDuetRoom({
   }, [logRoom]);
 
   // Cleanup RTCPeerConnection safely
-  const closePeerConnection = useCallback(() => {
+  const closePeerConnection = useCallback((clearPendingIce = true) => {
     if (pcRef.current) {
       logWebRTC('Closing existing RTCPeerConnection');
       try {
@@ -262,7 +266,10 @@ export function useDuetRoom({
     }
     hasNegotiatedRef.current = false;
     isInitiatingRef.current = false;
-    pendingIceCandidatesRef.current = [];
+    if (clearPendingIce) {
+      pendingIceCandidatesRef.current = [];
+    }
+    remoteStreamRef.current = new MediaStream();
     setRemoteStream(null);
   }, [logWebRTC]);
 
@@ -273,8 +280,8 @@ export function useDuetRoom({
     pendingIceCandidatesRef.current = [];
     for (const candidate of queued) {
       try {
-        logSignal('Adding queued remote ICE candidate');
-        await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+        logSignal('Adding queued remote ICE candidate:', candidate?.sdpMid || candidate?.candidate);
+        await pcRef.current.addIceCandidate(candidate);
       } catch (e) {
         console.warn('[DUET][SIGNAL] Error adding queued ICE candidate:', e);
       }
@@ -295,7 +302,7 @@ export function useDuetRoom({
 
     isInitiatingRef.current = true;
     logWebRTC('Initiating WebRTC offer as HOST to guest:', targetPartnerId);
-    closePeerConnection();
+    closePeerConnection(true);
 
     try {
       let stream = localStreamRef.current;
@@ -311,16 +318,17 @@ export function useDuetRoom({
           });
         },
         onTrack: (evt) => {
-          logMedia('Remote track received by host:', evt.track.kind);
-          if (evt.streams && evt.streams[0]) {
-            setRemoteStream(evt.streams[0]);
-          } else {
-            setRemoteStream(prev => {
-              const s = prev || new MediaStream();
-              s.addTrack(evt.track);
-              return s;
-            });
+          logMedia('Remote track received by host:', evt.track.kind, evt.track.id);
+          const track = evt.track;
+          const currentTracks = remoteStreamRef.current.getTracks();
+          const existing = currentTracks.find(t => t.id === track.id || t.kind === track.kind);
+          if (existing) {
+            remoteStreamRef.current.removeTrack(existing);
           }
+          remoteStreamRef.current.addTrack(track);
+
+          const freshStream = new MediaStream(remoteStreamRef.current.getTracks());
+          setRemoteStream(freshStream);
           setRoomState(ROOM_STATES.READY);
         },
         onConnectionStateChange: (state) => {
@@ -350,7 +358,18 @@ export function useDuetRoom({
         });
       }
 
-      const offer = await pc.createOffer();
+      const kinds = stream ? stream.getTracks().map(t => t.kind) : [];
+      if (!kinds.includes('video')) {
+        pc.addTransceiver('video', { direction: 'recvonly' });
+      }
+      if (!kinds.includes('audio')) {
+        pc.addTransceiver('audio', { direction: 'recvonly' });
+      }
+
+      const offer = await pc.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
+      });
       await pc.setLocalDescription(offer);
       logSignal('Host created offer, broadcasting to guest:', targetPartnerId);
       hasNegotiatedRef.current = true;
@@ -369,7 +388,14 @@ export function useDuetRoom({
   // Answer WebRTC Offer as Guest
   const handleRemoteOfferAsGuest = useCallback(async (offer, senderId) => {
     logWebRTC('Guest handling remote offer from host:', senderId);
-    closePeerConnection();
+
+    if (pcRef.current && pcRef.current.connectionState === 'connected' && pcRef.current.signalingState === 'stable') {
+      logWebRTC('Guest already connected and stable, skipping duplicate offer');
+      return;
+    }
+
+    // Do NOT wipe pending ICE candidates when answering offer from host!
+    closePeerConnection(false);
 
     try {
       let stream = localStreamRef.current;
@@ -385,16 +411,17 @@ export function useDuetRoom({
           });
         },
         onTrack: (evt) => {
-          logMedia('Remote track received by guest:', evt.track.kind);
-          if (evt.streams && evt.streams[0]) {
-            setRemoteStream(evt.streams[0]);
-          } else {
-            setRemoteStream(prev => {
-              const s = prev || new MediaStream();
-              s.addTrack(evt.track);
-              return s;
-            });
+          logMedia('Remote track received by guest:', evt.track.kind, evt.track.id);
+          const track = evt.track;
+          const currentTracks = remoteStreamRef.current.getTracks();
+          const existing = currentTracks.find(t => t.id === track.id || t.kind === track.kind);
+          if (existing) {
+            remoteStreamRef.current.removeTrack(existing);
           }
+          remoteStreamRef.current.addTrack(track);
+
+          const freshStream = new MediaStream(remoteStreamRef.current.getTracks());
+          setRemoteStream(freshStream);
           setRoomState(ROOM_STATES.READY);
         },
         onConnectionStateChange: (state) => {
@@ -417,11 +444,22 @@ export function useDuetRoom({
         });
       }
 
+      const kinds = stream ? stream.getTracks().map(t => t.kind) : [];
+      if (!kinds.includes('video')) {
+        pc.addTransceiver('video', { direction: 'recvonly' });
+      }
+      if (!kinds.includes('audio')) {
+        pc.addTransceiver('audio', { direction: 'recvonly' });
+      }
+
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
       logWebRTC('Guest setRemoteDescription(offer) succeeded');
       await drainIceCandidates();
 
-      const answer = await pc.createAnswer();
+      const answer = await pc.createAnswer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
+      });
       await pc.setLocalDescription(answer);
       logSignal('Guest created answer, broadcasting to host:', senderId);
       hasNegotiatedRef.current = true;
@@ -459,11 +497,11 @@ export function useDuetRoom({
   // Handle remote ICE candidate on both sides
   const handleRemoteIceCandidate = useCallback(async (candidate, senderId) => {
     logSignal('Received remote ICE candidate from:', senderId);
-    if (!candidate || !candidate.candidate) return;
+    if (!candidate) return;
 
     if (pcRef.current && pcRef.current.remoteDescription) {
       try {
-        await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+        await pcRef.current.addIceCandidate(candidate);
       } catch (e) {
         console.warn('[DUET][SIGNAL] Error adding remote candidate:', e);
       }
@@ -498,7 +536,7 @@ export function useDuetRoom({
     const channel = supabase.channel(channelName, {
       config: {
         presence: { key: participantId },
-        broadcast: { ack: true }
+        broadcast: { ack: false }
       }
     });
 
@@ -818,7 +856,7 @@ export function useDuetRoom({
     partnerId,
     participantCount,
     youMode,
-    localStream: localStreamRef.current,
+    localStream,
     remoteStream,
     countdownNum,
     isCapturing,

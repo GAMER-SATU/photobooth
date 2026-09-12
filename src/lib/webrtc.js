@@ -12,8 +12,18 @@ export function getIceServers() {
         'stun:stun2.l.google.com:19302',
         'stun:stun3.l.google.com:19302',
         'stun:stun4.l.google.com:19302',
-        'stun:stun.services.mozilla.com'
+        'stun:stun.relay.metered.ca:80'
       ]
+    },
+    {
+      urls: [
+        'turn:global.relay.metered.ca:80',
+        'turn:global.relay.metered.ca:80?transport=tcp',
+        'turn:global.relay.metered.ca:443',
+        'turns:global.relay.metered.ca:443?transport=tcp'
+      ],
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
     }
   ];
 
@@ -22,10 +32,10 @@ export function getIceServers() {
   const turnCredential = process.env.NEXT_PUBLIC_TURN_CREDENTIAL;
 
   if (turnUrl) {
-    const turnConfig = { urls: turnUrl };
-    if (turnUsername) turnConfig.username = turnUsername;
-    if (turnCredential) turnConfig.credential = turnCredential;
-    iceServers.push(turnConfig);
+    const customTurn = { urls: turnUrl };
+    if (turnUsername) customTurn.username = turnUsername;
+    if (turnCredential) customTurn.credential = turnCredential;
+    iceServers.unshift(customTurn);
   }
 
   return iceServers;

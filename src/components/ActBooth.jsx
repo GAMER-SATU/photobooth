@@ -77,6 +77,21 @@ export default function ActBooth({
     }
   }, [photos.length]);
 
+  // Ensure remoteStream is reliably bound to camThem video element
+  useEffect(() => {
+    if (camThemRef?.current && remoteStream) {
+      if (camThemRef.current.srcObject !== remoteStream) {
+        camThemRef.current.srcObject = remoteStream;
+      }
+      camThemRef.current.play().catch(() => {
+        if (camThemRef.current) {
+          camThemRef.current.muted = true;
+          camThemRef.current.play().catch(() => {});
+        }
+      });
+    }
+  }, [remoteStream, camThemRef]);
+
   const filterCss = curFilter && curFilter.css && curFilter.css !== 'none' ? curFilter.css : 'none';
   const screenVigStyle = curFilter?.vig
     ? `inset 0 0 ${Math.round(curFilter.vig * 55)}px rgba(4,4,6,${(curFilter.vig * 0.75).toFixed(2)})`
@@ -165,7 +180,7 @@ export default function ActBooth({
                       width={480}
                       height={540}
                       style={{
-                        display: youMode === 'live' ? 'block' : 'none',
+                        display: youMode === 'live' && studio ? 'block' : 'none',
                         filter: filterCss,
                         transition: 'filter 0.3s ease'
                       }}
@@ -220,6 +235,9 @@ export default function ActBooth({
                           id="camThem"
                           autoPlay
                           playsInline
+                          onLoadedMetadata={(e) => {
+                            try { e.target.play().catch(() => {}); } catch (err) {}
+                          }}
                           style={{
                             display: remoteStream ? 'block' : 'none',
                             filter: filterCss,
@@ -233,7 +251,7 @@ export default function ActBooth({
                           width={480}
                           height={540}
                           style={{
-                            display: remoteStream ? 'block' : 'none',
+                            display: remoteStream && studio ? 'block' : 'none',
                             filter: filterCss,
                             transition: 'filter 0.3s ease'
                           }}
