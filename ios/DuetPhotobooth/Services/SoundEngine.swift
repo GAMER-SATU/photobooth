@@ -7,15 +7,46 @@ import AVFoundation
 import AudioToolbox
 import UIKit
 
+public enum SoundType {
+    case beep
+    case tick
+    case click
+    case snip
+    case whoosh
+    case thunk
+    case ding
+    case stamp
+    case arrive
+}
+
 public final class SoundEngine {
     public static let shared = SoundEngine()
     
     public var soundEnabled: Bool = true
+    public var isEnabled: Bool {
+        get { soundEnabled }
+        set { soundEnabled = newValue }
+    }
+    
     private var engine: AVAudioEngine?
     private var isSetup = false
     
     private init() {
         setupAudioSession()
+    }
+    
+    public func play(_ sound: SoundType) {
+        switch sound {
+        case .beep: beep()
+        case .tick: tick()
+        case .click: click()
+        case .snip: snip()
+        case .whoosh: whoosh()
+        case .thunk: thunk()
+        case .ding: ding()
+        case .stamp: stamp()
+        case .arrive: arrive()
+        }
     }
     
     private func setupAudioSession() {

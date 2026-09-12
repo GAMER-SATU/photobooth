@@ -40,7 +40,7 @@ public enum PhotoboothAct: Int, CaseIterable, Comparable {
 }
 
 public enum RoomCodeGenerator {
-    public static func generate(for mode: SessionMode) -> String {
+    public static func generate(for mode: SessionMode = .solo) -> String {
         let chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
         var code = ""
         for _ in 0..<6 {
