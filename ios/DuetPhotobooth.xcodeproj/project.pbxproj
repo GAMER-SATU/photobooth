@@ -1,0 +1,443 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1001 /* DuetPhotoboothApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2001 /* DuetPhotoboothApp.swift */; };
+		1002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2002 /* ContentView.swift */; };
+		1003 /* DuetTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2003 /* DuetTheme.swift */; };
+		1004 /* SessionMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2004 /* SessionMode.swift */; };
+		1005 /* FilterModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2005 /* FilterModel.swift */; };
+		1006 /* PhotoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2006 /* PhotoModel.swift */; };
+		1007 /* StickerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2007 /* StickerModel.swift */; };
+		1008 /* SoundEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2008 /* SoundEngine.swift */; };
+		1009 /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2009 /* CameraManager.swift */; };
+		1010 /* StripRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2010 /* StripRenderer.swift */; };
+		1011 /* PrintManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2011 /* PrintManager.swift */; };
+		1012 /* PhotoboothViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2012 /* PhotoboothViewModel.swift */; };
+		1013 /* ActCurtainsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2013 /* ActCurtainsView.swift */; };
+		1014 /* ActBoothView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2014 /* ActBoothView.swift */; };
+		1015 /* ActPrinterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2015 /* ActPrinterView.swift */; };
+		1016 /* ActMemoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2016 /* ActMemoryView.swift */; };
+		1017 /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2017 /* HeaderView.swift */; };
+		1018 /* LightboxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2018 /* LightboxView.swift */; };
+		1019 /* PhotoStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2019 /* PhotoStripView.swift */; };
+		1020 /* PolaroidCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2020 /* PolaroidCardView.swift */; };
+		1021 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2021 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2000 /* DuetPhotobooth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DuetPhotobooth.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2001 /* DuetPhotoboothApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuetPhotoboothApp.swift; sourceTree = "<group>"; };
+		2002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		2003 /* DuetTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuetTheme.swift; sourceTree = "<group>"; };
+		2004 /* SessionMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionMode.swift; sourceTree = "<group>"; };
+		2005 /* FilterModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterModel.swift; sourceTree = "<group>"; };
+		2006 /* PhotoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoModel.swift; sourceTree = "<group>"; };
+		2007 /* StickerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerModel.swift; sourceTree = "<group>"; };
+		2008 /* SoundEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEngine.swift; sourceTree = "<group>"; };
+		2009 /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
+		2010 /* StripRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripRenderer.swift; sourceTree = "<group>"; };
+		2011 /* PrintManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintManager.swift; sourceTree = "<group>"; };
+		2012 /* PhotoboothViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoboothViewModel.swift; sourceTree = "<group>"; };
+		2013 /* ActCurtainsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActCurtainsView.swift; sourceTree = "<group>"; };
+		2014 /* ActBoothView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActBoothView.swift; sourceTree = "<group>"; };
+		2015 /* ActPrinterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActPrinterView.swift; sourceTree = "<group>"; };
+		2016 /* ActMemoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActMemoryView.swift; sourceTree = "<group>"; };
+		2017 /* HeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderView.swift; sourceTree = "<group>"; };
+		2018 /* LightboxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightboxView.swift; sourceTree = "<group>"; };
+		2019 /* PhotoStripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStripView.swift; sourceTree = "<group>"; };
+		2020 /* PolaroidCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolaroidCardView.swift; sourceTree = "<group>"; };
+		2021 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2022 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4000 /* Root */ = {
+			isa = PBXGroup;
+			children = (
+				4001 /* DuetPhotobooth */,
+				4002 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4001 /* DuetPhotobooth */ = {
+			isa = PBXGroup;
+			children = (
+				2001 /* DuetPhotoboothApp.swift */,
+				4003 /* Theme */,
+				4004 /* Models */,
+				4005 /* Services */,
+				4006 /* ViewModels */,
+				4007 /* Views */,
+				2021 /* Assets.xcassets */,
+				2022 /* Info.plist */,
+			);
+			path = DuetPhotobooth;
+			sourceTree = "<group>";
+		};
+		4002 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2000 /* DuetPhotobooth.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4003 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				2003 /* DuetTheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		4004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2004 /* SessionMode.swift */,
+				2005 /* FilterModel.swift */,
+				2006 /* PhotoModel.swift */,
+				2007 /* StickerModel.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		4005 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				2008 /* SoundEngine.swift */,
+				2009 /* CameraManager.swift */,
+				2010 /* StripRenderer.swift */,
+				2011 /* PrintManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		4006 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				2012 /* PhotoboothViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		4007 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2002 /* ContentView.swift */,
+				2013 /* ActCurtainsView.swift */,
+				2014 /* ActBoothView.swift */,
+				2015 /* ActPrinterView.swift */,
+				2016 /* ActMemoryView.swift */,
+				4008 /* Components */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		4008 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				2017 /* HeaderView.swift */,
+				2018 /* LightboxView.swift */,
+				2019 /* PhotoStripView.swift */,
+				2020 /* PolaroidCardView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5001 /* DuetPhotobooth */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6001 /* Build configuration list for PBXNativeTarget "DuetPhotobooth" */;
+			buildPhases = (
+				7001 /* Sources */,
+				3001 /* Frameworks */,
+				8001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DuetPhotobooth;
+			productName = DuetPhotobooth;
+			productReference = 2000 /* DuetPhotobooth.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					5001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 6002 /* Build configuration list for PBXProject "DuetPhotobooth" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 4000 /* Root */;
+			productRefGroup = 4002 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5001 /* DuetPhotobooth */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1021 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1001 /* DuetPhotoboothApp.swift in Sources */,
+				1002 /* ContentView.swift in Sources */,
+				1003 /* DuetTheme.swift in Sources */,
+				1004 /* SessionMode.swift in Sources */,
+				1005 /* FilterModel.swift in Sources */,
+				1006 /* PhotoModel.swift in Sources */,
+				1007 /* StickerModel.swift in Sources */,
+				1008 /* SoundEngine.swift in Sources */,
+				1009 /* CameraManager.swift in Sources */,
+				1010 /* StripRenderer.swift in Sources */,
+				1011 /* PrintManager.swift in Sources */,
+				1012 /* PhotoboothViewModel.swift in Sources */,
+				1013 /* ActCurtainsView.swift in Sources */,
+				1014 /* ActBoothView.swift in Sources */,
+				1015 /* ActPrinterView.swift in Sources */,
+				1016 /* ActMemoryView.swift in Sources */,
+				1017 /* HeaderView.swift in Sources */,
+				1018 /* LightboxView.swift in Sources */,
+				1019 /* PhotoStripView.swift in Sources */,
+				1020 /* PolaroidCardView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		6003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDEFINED_VARIABLES = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		6004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDEFINED_VARIABLES = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		6005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DuetPhotobooth/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Duet Photobooth";
+				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Duet Photobooth uses your camera to capture vintage photobooth strips.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Save your high-resolution photobooth strips directly to your photo library.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.duet.photobooth;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DuetPhotobooth/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Duet Photobooth";
+				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Duet Photobooth uses your camera to capture vintage photobooth strips.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Save your high-resolution photobooth strips directly to your photo library.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.duet.photobooth;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6001 /* Build configuration list for PBXNativeTarget "DuetPhotobooth" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6005 /* Debug */,
+				6006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6002 /* Build configuration list for PBXProject "DuetPhotobooth" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6003 /* Debug */,
+				6004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9001 /* Project object */;
+}

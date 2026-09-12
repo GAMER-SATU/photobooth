@@ -1,0 +1,52 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Duet Photobooth iOS
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: Build for iOS Simulator & Device
+        run: |
+          xcodebuild clean build \
+            -project ios/DuetPhotobooth.xcodeproj \
+            -scheme DuetPhotobooth \
+            -destination "generic/platform=iOS Simulator" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Archive App
+        run: |
+          xcodebuild archive \
+            -project ios/DuetPhotobooth.xcodeproj \
+            -scheme DuetPhotobooth \
+            -destination "generic/platform=iOS" \
+            -archivePath "$RUNNER_TEMP/DuetPhotobooth.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Package Payload (.ipa / .zip)
+        run: |
+          mkdir -p build-output/Payload
+          cp -r "$RUNNER_TEMP/DuetPhotobooth.xcarchive/Products/Applications/DuetPhotobooth.app" build-output/Payload/
+          cd build-output
+          zip -r DuetPhotobooth.ipa Payload
+          zip -r DuetPhotobooth-App.zip Payload/DuetPhotobooth.app
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: DuetPhotobooth-iOS-Build
+          path: build-output/

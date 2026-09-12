@@ -1,0 +1,24 @@
+{
+  "name": "duet-photobooth",
+  "version": "1.0.0",
+  "description": "DUET — A little photo booth for two. Real-time collaborative photobooth for couples and besties.",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@mediapipe/selfie_segmentation": "^0.1.1675465747",
+    "@supabase/supabase-js": "^2.116.0",
+    "next": "^14.2.15",
+    "peerjs": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.15"
+  }
+}
