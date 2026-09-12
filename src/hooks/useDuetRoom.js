@@ -346,6 +346,9 @@ export function useDuetRoom({
         },
         onIceConnectionStateChange: (state) => {
           logWebRTC('Host ICE state:', state);
+          if (state === 'failed') {
+            try { pc.restartIce(); } catch (e) {}
+          }
         }
       });
 
@@ -428,10 +431,18 @@ export function useDuetRoom({
           logWebRTC('Guest connection state:', state);
           if (state === 'connected') {
             setRoomState(ROOM_STATES.READY);
+          } else if (state === 'failed') {
+            logWebRTC('Guest connection failed, re-requesting offer from host...');
+            setTimeout(() => {
+              broadcastMessage('guest_ready', { to: senderId });
+            }, 1200);
           }
         },
         onIceConnectionStateChange: (state) => {
           logWebRTC('Guest ICE state:', state);
+          if (state === 'failed') {
+            try { pc.restartIce(); } catch (e) {}
+          }
         }
       });
 

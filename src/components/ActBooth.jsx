@@ -83,14 +83,27 @@ export default function ActBooth({
       if (camThemRef.current.srcObject !== remoteStream) {
         camThemRef.current.srcObject = remoteStream;
       }
-      camThemRef.current.play().catch(() => {
-        if (camThemRef.current) {
-          camThemRef.current.muted = true;
-          camThemRef.current.play().catch(() => {});
-        }
-      });
+      // Start muted to comply with mobile browser autoplay policies
+      camThemRef.current.muted = true;
+      camThemRef.current.play().catch(() => {});
     }
   }, [remoteStream, camThemRef]);
+
+  // Unmute remote stream on the first user interaction (touch or click)
+  useEffect(() => {
+    const handleUnmute = () => {
+      if (camThemRef?.current) {
+        camThemRef.current.muted = false;
+        camThemRef.current.play().catch(() => {});
+      }
+    };
+    window.addEventListener('click', handleUnmute, { once: true });
+    window.addEventListener('touchstart', handleUnmute, { once: true });
+    return () => {
+      window.removeEventListener('click', handleUnmute);
+      window.removeEventListener('touchstart', handleUnmute);
+    };
+  }, [camThemRef]);
 
   const filterCss = curFilter && curFilter.css && curFilter.css !== 'none' ? curFilter.css : 'none';
   const screenVigStyle = curFilter?.vig
@@ -235,6 +248,7 @@ export default function ActBooth({
                           id="camThem"
                           autoPlay
                           playsInline
+                          muted
                           onLoadedMetadata={(e) => {
                             try { e.target.play().catch(() => {}); } catch (err) {}
                           }}

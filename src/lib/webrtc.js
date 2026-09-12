@@ -3,30 +3,32 @@
  */
 
 export function getIceServers() {
-  const stunUrl = process.env.NEXT_PUBLIC_STUN_SERVER || 'stun:stun.l.google.com:19302';
+  const customStun = process.env.NEXT_PUBLIC_STUN_SERVER;
+  
+  // Fast, verified, reliable global STUN servers across multiple providers
+  const defaultStunUrls = [
+    'stun:stun.l.google.com:19302',
+    'stun:stun1.l.google.com:19302',
+    'stun:stun2.l.google.com:19302',
+    'stun:stun3.l.google.com:19302',
+    'stun:stun4.l.google.com:19302',
+    'stun:stun.cloudflare.com:3478',
+    'stun:stun.nextcloud.com:3478',
+    'stun:relay.metered.ca:80',
+    'stun:stun.voip.blackberry.com:3478'
+  ];
+
+  if (customStun) {
+    defaultStunUrls.unshift(customStun);
+  }
+
   const iceServers = [
     {
-      urls: [
-        stunUrl,
-        'stun:stun1.l.google.com:19302',
-        'stun:stun2.l.google.com:19302',
-        'stun:stun3.l.google.com:19302',
-        'stun:stun4.l.google.com:19302',
-        'stun:stun.relay.metered.ca:80'
-      ]
-    },
-    {
-      urls: [
-        'turn:global.relay.metered.ca:80',
-        'turn:global.relay.metered.ca:80?transport=tcp',
-        'turn:global.relay.metered.ca:443',
-        'turns:global.relay.metered.ca:443?transport=tcp'
-      ],
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
+      urls: defaultStunUrls
     }
   ];
 
+  // Optional dedicated TURN server (e.g. from Metered, Twilio, Coturn)
   const turnUrl = process.env.NEXT_PUBLIC_TURN_SERVER;
   const turnUsername = process.env.NEXT_PUBLIC_TURN_USERNAME;
   const turnCredential = process.env.NEXT_PUBLIC_TURN_CREDENTIAL;
@@ -49,7 +51,8 @@ export function createPeerConnection({
 }) {
   const config = {
     iceServers: getIceServers(),
-    iceCandidatePoolSize: 2
+    bundlePolicy: 'max-bundle',
+    rtcpMuxPolicy: 'require'
   };
 
   console.log('[DUET][WEBRTC] Creating RTCPeerConnection with config:', config);
