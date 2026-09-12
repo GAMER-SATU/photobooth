@@ -96,7 +96,7 @@ public final class StripRenderer {
                     
                     cg.saveGState()
                     cg.translateBy(x: sx, y: sy)
-                    cg.rotate(by: CGFloat(sticker.rotation * .pi / 180.0))
+                    cg.rotate(by: CGFloat(sticker.rotation.radians))
                     drawSticker(type: sticker.type, in: cg, size: sSize)
                     cg.restoreGState()
                 }
